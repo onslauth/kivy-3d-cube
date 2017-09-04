@@ -4,22 +4,44 @@ from kivy.core.window import Window
 from kivy.resources import resource_find
 from kivy.graphics.transformation import Matrix
 from kivy.graphics import *
+import numpy as np
 
 class Renderer(Widget):
-	SCALE_FACTOR = 0.01
+	SCALE_FACTOR = 0.025
 	MAX_SCALE = 3.0
 	MIN_SCALE = 0.3
 	ROTATE_SPEED = 1.
 
 	def __init__( self, **kw ):
-		self.vertices = [[  1,  1,  1,
-				    1, -1,  1, 
-				    1, -1, -1,
-				    1,  1, -1,
-				   -1,  1, -1,
-				   -1,  1,  1,
-				   -1, -1,  1,
-				   -1, -1, -1 ]]
+
+		self.vertices = [ ]
+
+		cube = np.zeros( ( 8, 3 ), 'f' )
+		i = 0
+		for x in ( -1, 1 ):
+			for y in ( -1, 1 ):
+				for z in ( -1, 1 ):
+					cube[ i ] = [ x, y, z ]
+					i += 1
+
+		for x in ( -2, 0, 2 ):
+			c = cube.copy( )
+			c[:,0:1] += x
+			self.vertices.append( c.flatten( ) )
+
+			for y in ( -2, 0, 2 ):
+				d = c.copy( )
+				d[:,1:2] += y
+				self.vertices.append( d.flatten( ) )
+
+				for z in ( -2, 0, 2 ):
+					e = d.copy( )
+					e[:,2:3] += z
+					self.vertices.append( e.flatten( ) )
+
+
+		self.indices = [ 0, 1, 0, 2, 0, 4, 1, 3, 1, 5, 3, 2, 3, 7, 2, 6, 6, 7, 7, 5, 6, 4, 4, 5 ]
+
 
 		kw[ 'shader_file' ] = 'shaders.glsl'
 		self.canvas = RenderContext( compute_normal_mat = True )
@@ -30,19 +52,27 @@ class Renderer(Widget):
 		super( Renderer, self ).__init__( **kw )
 
 		with self.canvas:
-			Translate( 0, 0, -4.5 )
+			# This controls the camera position
+			Translate( 0, 0, -10 )
+
 			self.rot = Rotate( 0, 1, 1, 1 )
 			self.rotx = Rotate( 0, 1, 0, 0 )
 			self.roty = Rotate( 0, 0, 1, 0 )
+
+			# This controls the zoom
+			self.scale = Scale( 1 )
+
 			ChangeState( Kd = ( 1.0, 0.0, 0.0 ),
 				     Ka = ( 1.0, 1.0, 0.0 ),
 				     Ks = ( .3, .3, .3 ),
 				     Tr = 1.,
 				     Ns = 1.,
 				     intensity = 1. )
+
+			# Draw the vertices and indices
 			for i in range( len( self.vertices ) ):
 				Mesh( vertices = self.vertices[ i ],
-				      indices = [ 0, 1, 1, 2, 2, 3, 3, 0, 3, 4, 4, 5, 5, 6, 6, 1, 6, 7, 7, 2, 7, 4, 5, 0 ],
+				      indices = self.indices,
 				      fmt = [ ( b'v_pos', 3, 'float' ) ],
 				      mode = 'lines' )
 
@@ -67,6 +97,19 @@ class Renderer(Widget):
 	def on_touch_down( self, touch ):
 		touch.grab( self )
 		self._touches.append( touch )
+
+		if 'button' in touch.profile and touch.button in ( 'scrollup', 'scrolldown' ):
+
+			if touch.button == "scrolldown":
+				scale = self.SCALE_FACTOR
+
+			if touch.button == "scrollup":
+				scale = -self.SCALE_FACTOR
+
+			xyz = self.scale.xyz
+			scale = xyz[ 0 ] + scale
+			if scale < self.MAX_SCALE and scale > self.MIN_SCALE:
+				self.scale.xyz = ( scale, scale, scale )
 
 	@ignore_undertouch
 	def on_touch_up( self, touch ):
