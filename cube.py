@@ -172,13 +172,11 @@ class Renderer(Widget):
 				       	         [ 0.000000, 119.999817, -0.209439 ],
 				       	         [ 0.000000, 120.999816, -0.211185 ],
 				       	         [ 0.000000, 121.999814, -0.212930 ],
-				       	         [ 0.000000, 122.999813, -0.214675 ] ] )
+				       	         [ 0.000000, 122.999813, -0.214675 ] ], 'f' )
 
-		print( self.line_vertices[ 0 ] )
-		print( self.line_vertices.shape )
 
 		self.line_indices = [ ]
-		for i in range( 0, len( self.line_vertices ) ):
+		for i in range( 0, int( len( self.line_vertices ) / 3 ) ):
 			self.line_indices += [ i, i + 1 ]
 
 		kw[ 'shader_file' ] = 'shaders.glsl'
@@ -224,10 +222,12 @@ class Renderer(Widget):
 				     intensity = 1. )
 
 			# Draw the line
-			Mesh( vertices = self.line_vertices.flatten( ),
-			      indices = self.line_indices,
-			      fmt = [ ( b'v_pos', 3, 'float' ) ],
-			      mode = 'lines' )
+			self.bh_line = Mesh( vertices = self.line_vertices.flatten( ),
+			                     indices = self.line_indices,
+			                     fmt = [ ( b'v_pos', 3, 'float' ) ],
+			                     mode = 'lines' )
+
+			print( self.bh_line.indices )
 
 		asp = float( Window.width ) / Window.height / 2.0
 		proj = Matrix( ).view_clip( -asp, asp, -0.5, 0.5, 1, 100, 1 )
@@ -236,8 +236,17 @@ class Renderer(Widget):
 		Window.request_keyboard( None, self ).bind( on_key_down = self.on_keyboard_down )
 
 	def on_keyboard_down( self, keyboard, keycode, text, modifiers ):
-		if keycode[ 1 ] == "left": self.rot.angle -= 10
-		elif keycode[ 1 ] == "right": self.rot.angle += 10
+		#if keycode[ 1 ] == "left": self.rot.angle -= 10
+		#elif keycode[ 1 ] == "right": self.rot.angle += 10
+
+		if keycode[ 1 ] == "up":
+			self.line_vertices[:,1:2] -= 1
+			self.bh_line.vertices = self.line_vertices.flatten( )
+		elif keycode[ 1 ] == "down":
+			self.line_vertices[:,1:2] += 1
+			self.bh_line.vertices = self.line_vertices.flatten( )
+
+
 
 	def ignore_undertouch( func ):
 		def wrap( self, touch ):
