@@ -24,12 +24,16 @@ class Renderer(Widget):
 					cube[ i ] = [ x, y, z ]
 					i += 1
 
+		# Shift the cube down below the x-axis
+		cube[:,1:2] -= 1
+
+		# Create cubes for each position
 		for x in ( -2, 0, 2 ):
 			c = cube.copy( )
 			c[:,0:1] += x
 			self.vertices.append( c.flatten( ) )
 
-			for y in ( -2, 0, 2 ):
+			for y in ( 0, -2, -4 ):
 				d = c.copy( )
 				d[:,1:2] += y
 				self.vertices.append( d.flatten( ) )
@@ -39,7 +43,7 @@ class Renderer(Widget):
 					e[:,2:3] += z
 					self.vertices.append( e.flatten( ) )
 
-
+		# The indices for each cube
 		self.indices = [ 0, 1, 0, 2, 0, 4, 1, 3, 1, 5, 3, 2, 3, 7, 2, 6, 6, 7, 7, 5, 6, 4, 4, 5 ]
 
 
@@ -52,8 +56,8 @@ class Renderer(Widget):
 		super( Renderer, self ).__init__( **kw )
 
 		with self.canvas:
-			# This controls the camera position
-			Translate( 0, 0, -10 )
+			# This controls the camera position, or rather, shifts the world
+			Translate( 0, -1, -10 )
 
 			self.rot = Rotate( 0, 1, 1, 1 )
 			self.rotx = Rotate( 0, 1, 0, 0 )
