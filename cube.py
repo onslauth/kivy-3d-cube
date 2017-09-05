@@ -4,6 +4,7 @@ from kivy.core.window import Window
 from kivy.resources import resource_find
 from kivy.graphics.transformation import Matrix
 from kivy.graphics import *
+from kivy.core.text import Label as CoreLabel
 import numpy as np
 
 class Renderer(Widget):
@@ -25,7 +26,9 @@ class Renderer(Widget):
 					i += 1
 
 		# Shift the cube down below the x-axis
-		cube[:,1:2] -= 1
+		cube[:,0:1] -= 1
+		cube[:,1:2] += 1
+		cube[:,2:3] -= 1
 
 		# Create cubes for each position
 		for x in ( -2, 0, 2 ):
@@ -33,12 +36,12 @@ class Renderer(Widget):
 			c[:,0:1] += x
 			self.vertices.append( c.flatten( ) )
 
-			for y in ( 0, -2, -4 ):
+			for y in ( 0, 2, 4 ):
 				d = c.copy( )
 				d[:,1:2] += y
 				self.vertices.append( d.flatten( ) )
 
-				for z in ( -2, 0, 2 ):
+				for z in ( 0, -2, -4 ):
 					e = d.copy( )
 					e[:,2:3] += z
 					self.vertices.append( e.flatten( ) )
@@ -188,7 +191,7 @@ class Renderer(Widget):
 
 		with self.canvas:
 			# This controls the camera position, or rather, shifts the world
-			Translate( 0, -1, -10 )
+			Translate( 0, -1, -15 )
 
 			self.rot = Rotate( 0, 1, 1, 1 )
 			self.rotx = Rotate( 0, 1, 0, 0 )
