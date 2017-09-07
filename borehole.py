@@ -68,6 +68,49 @@ class Renderer(Widget):
 		self.cube_indices = self.cube_indices.reshape( 648, )
 
 
+		# Polar grid
+		DIV = 72
+		R = 4.0
+		H = 0.5
+
+		deg = np.arange( 0, 2.0 * np.pi, 2.0 * np.pi / DIV )
+		x = np.cos( deg ) * R
+		y = np.sin( deg ) * R
+		z = np.ones( DIV, dtype = 'f' )
+
+		grid = np.array( [ x, y, z * 0.0, x, y, z * H ], 'f' ).transpose( ).reshape( DIV * 2, 3 )
+		grid[ 1 ][ 2 ] = H * 2
+
+		gridh = np.array( [ y, z * ( -H / 2 ), x, y, z * ( H / 2 ), x ], 'f' ).transpose( ).reshape( DIV * 2, 3 )
+
+		self.polar_vertices_one = grid.flatten( )
+		self.polar_indices_one  = np.arange( len( grid ) )
+
+		#first,second = np.split( gridh, 2 )	
+		half = int( len( gridh ) / 2 )
+		self.polar_vertices_one_h = gridh[ 0:half ].flatten( )
+		self.polar_indices_one_h = np.arange( half )
+
+		DIV = 36
+		R = 4.01
+		H = 0.8
+
+		deg = np.arange( 0, 2.0 * np.pi, 2.0 * np.pi / DIV )
+		x = np.cos( deg ) * R
+		y = np.sin( deg ) * R
+		z = np.ones( DIV, 'f' )
+		grid2 = np.array( [ x, y, z * 0.0, x, y, z * H ], 'f' ).transpose( ).reshape( DIV * 2, 3 )
+
+		gridh2 = np.array( [ y, z * ( -H / 2 ), x, y, z * ( H / 2 ), x ], 'f' ).transpose( ).reshape( DIV * 2, 3 )
+
+		self.polar_vertices_two = grid2.flatten( )
+		self.polar_indices_two  = np.arange( len( grid2 ) )
+
+		half = int( len( gridh2 ) / 2 )
+		self.polar_vertices_two_h = gridh2[ 0:half ].flatten( )
+		self.polar_indices_two_h = np.arange( half )
+
+
 		kw[ 'shader_file' ] = 'shaders.glsl'
 		self.canvas = RenderContext( compute_normal_mat = True )
 		shader_file = kw.pop( 'shader_file' )
@@ -99,6 +142,54 @@ class Renderer(Widget):
 					       indices = self.cube_indices,
 					       fmt = [ ( b'v_pos', 3, 'float' ) ],
 					       mode = 'lines' )
+
+			ChangeState( Kd = ( 1.0, 1.0, 1.0 ),
+				     Ka = ( 1.0, 1.0, 1.0 ),
+				     Ks = ( .3, .3, .3 ),
+				     Tr = 1.,
+				     Ns = 1.,
+				     intensity = 0.5 )
+
+			Mesh( vertices = self.polar_vertices_one,
+			      indices = self.polar_indices_one,
+			      fmt = [ ( b'v_pos', 3, 'float' ) ],
+			      mode = 'lines' )
+
+			ChangeState( Kd = ( 1.0, 1.0, 1.0 ),
+				     Ka = ( 1.0, 1.0, 1.0 ),
+				     Ks = ( .3, .3, .3 ),
+				     Tr = 1.,
+				     Ns = 1.,
+				     intensity = 0.8 )
+
+			Mesh( vertices = self.polar_vertices_two,
+			      indices = self.polar_indices_two,
+			      fmt = [ ( b'v_pos', 3, 'float' ) ],
+			      mode = 'lines' )
+
+			ChangeState( Kd = ( 1.0, 1.0, 1.0 ),
+				     Ka = ( 1.0, 1.0, 1.0 ),
+				     Ks = ( .3, .3, .3 ),
+				     Tr = 1.,
+				     Ns = 1.,
+				     intensity = 0.5 )
+
+			Mesh( vertices = self.polar_vertices_one_h,
+			      indices = self.polar_indices_one_h,
+			      fmt = [ ( b'v_pos', 3, 'float' ) ],
+			      mode = 'lines' )
+
+
+			ChangeState( Kd = ( 1.0, 1.0, 1.0 ),
+				     Ka = ( 1.0, 1.0, 1.0 ),
+				     Ks = ( .3, .3, .3 ),
+				     Tr = 1.,
+				     Ns = 1.,
+				     intensity = 0.8 )
+			Mesh( vertices = self.polar_vertices_two_h,
+			      indices = self.polar_indices_two_h,
+			      fmt = [ ( b'v_pos', 3, 'float' ) ],
+			      mode = 'lines' )
 
 		asp = float( Window.width ) / Window.height / 2.0
 		proj = Matrix( ).view_clip( -asp, asp, -0.5, 0.5, 1, 100, 1 )
