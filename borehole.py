@@ -130,7 +130,12 @@ class Renderer(Widget):
 			# This controls the zoom
 			self.scale = Scale( 1 )
 
+
+			# Put the grid instructions in a PushMatrix / PopMatrix block, and add a translate
+			# instruction in here, so that the grid can be moved separately.
+			PushMatrix( )
 			# Change the colour of the mesh to red.
+			self.translate_cube = Translate( 0, 0, 0 )
 			ChangeState( Kd = ( 1.0, 0.0, 0.0 ),
 				     Ka = ( 1.0, 1.0, 0.0 ),
 				     Ks = ( .3, .3, .3 ),
@@ -142,6 +147,9 @@ class Renderer(Widget):
 					       indices = self.cube_indices,
 					       fmt = [ ( b'v_pos', 3, 'float' ) ],
 					       mode = 'lines' )
+			PopMatrix( )
+
+
 
 			ChangeState( Kd = ( 1.0, 1.0, 1.0 ),
 				     Ka = ( 1.0, 1.0, 1.0 ),
@@ -201,9 +209,9 @@ class Renderer(Widget):
 
 		## This shifts the line
 		if keycode[ 1 ] == "up":
-			self.translate.y -= 1
+			self.translate_cube.y -= 1
 		elif keycode[ 1 ] == "down":
-			self.translate.y += 1
+			self.translate_cube.y += 1
 
 
 	def ignore_undertouch( func ):
