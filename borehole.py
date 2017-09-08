@@ -87,7 +87,7 @@ class Renderer(Widget):
 		self.polar_indices_one  = np.arange( len( grid ) )
 
 		#first,second = np.split( gridh, 2 )	
-		half = int( len( gridh ) / 2 )
+		half = int( len( gridh ) / 2 ) + 2
 		self.polar_vertices_one_h = gridh[ 0:half ].flatten( )
 		self.polar_indices_one_h = np.arange( half )
 
@@ -106,7 +106,7 @@ class Renderer(Widget):
 		self.polar_vertices_two = grid2.flatten( )
 		self.polar_indices_two  = np.arange( len( grid2 ) )
 
-		half = int( len( gridh2 ) / 2 )
+		half = int( len( gridh2 ) / 2 ) + 2
 		self.polar_vertices_two_h = gridh2[ 0:half ].flatten( )
 		self.polar_indices_two_h = np.arange( half )
 
@@ -175,6 +175,11 @@ class Renderer(Widget):
 			      fmt = [ ( b'v_pos', 3, 'float' ) ],
 			      mode = 'lines' )
 
+
+			PushMatrix( )
+
+			self.vertical_polar_rotate = Rotate( 0, 0, 0, 1 )
+
 			ChangeState( Kd = ( 1.0, 1.0, 1.0 ),
 				     Ka = ( 1.0, 1.0, 1.0 ),
 				     Ks = ( .3, .3, .3 ),
@@ -199,6 +204,8 @@ class Renderer(Widget):
 			      fmt = [ ( b'v_pos', 3, 'float' ) ],
 			      mode = 'lines' )
 
+			PopMatrix( )
+
 		asp = float( Window.width ) / Window.height / 2.0
 		proj = Matrix( ).view_clip( -asp, asp, -0.5, 0.5, 1, 100, 1 )
 		self.canvas[ 'projection_mat' ] = proj
@@ -212,6 +219,10 @@ class Renderer(Widget):
 			self.translate_cube.y -= 1
 		elif keycode[ 1 ] == "down":
 			self.translate_cube.y += 1
+		elif keycode[ 1 ] == "left":
+			self.vertical_polar_rotate.angle += 1
+		elif keycode[ 1 ] == "right":
+			self.vertical_polar_rotate.angle -= 1
 
 
 	def ignore_undertouch( func ):
